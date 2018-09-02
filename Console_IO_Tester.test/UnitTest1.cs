@@ -14,9 +14,9 @@ namespace Console_IO_Tester.Test
         [Fact]
         public void Simple_10_input_validation()
         {
-            Console_IO_Tester.IO_Exception_Check Console_Exception_Check = new Console_IO_Tester.IO_Exception_Check(@"..\..\..\..\Null_Reference_Exception_Every_Run", @"..\..\..\10_inputs.json");
+            Console_IO_Tester.IO_Exception_Check Console_Exception_Check = new Console_IO_Tester.IO_Exception_Check(@"../../../../Null_Reference_Exception_Every_Run", @"../../../10_inputs.json");
             var results = Console_Exception_Check.RunCheck();
-            Assert.True(results.Count > 0);
+            Assert.Equal(10,results.count());
         }
     }
 }

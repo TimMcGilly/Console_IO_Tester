@@ -6,7 +6,7 @@ namespace Console_IO_Tester_CLI
     {
         static void Main(string[] args)
         {
-            Console_IO_Tester.IO_Exception_Check Console_Exception_Check = new Console_IO_Tester.IO_Exception_Check(@"..\..\..\..\Null_Reference_Exception_Every_Run", @"..\..\..\10_inputs.json");
+            Console_IO_Tester.IO_Exception_Check Console_Exception_Check = new Console_IO_Tester.IO_Exception_Check(@"../../../../Null_Reference_Exception_Every_Run", @"../../../10_inputs.json");
             var results = Console_Exception_Check.RunCheck();
             foreach (var result in results)
             {
