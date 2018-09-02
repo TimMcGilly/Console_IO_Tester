@@ -1,6 +1,7 @@
 language: csharp
 mono: none
 dotnet: 2.0.0
-script:
- - cd Console_IO_Tester.Test
+script
+ - dir
+ - cd Console_IO_Tester.test
  - dotnet test
