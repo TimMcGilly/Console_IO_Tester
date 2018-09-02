@@ -1,2 +1,6 @@
 language: csharp
-solution: Console_IO_Tester.sln
+mono: none
+dotnet: 2.0.0
+script:
+ - cd Console_IO_Tester.Test
+ - dotnet test

@@ -14,13 +14,25 @@ namespace Console_IO_Tester
 
     public class IO_Exception_Check
     {
+        /// <summary>
+        /// Toggle default value for using the dotnet CLI for testing in the <see cref="IO_Exception_Check"/> class..
+        /// </summary>
         public static bool UseDotnetCLI = true;
-        public bool LocalUseDotnetCLI = true;
+
+        /// <summary>
+        /// Toggle using the dotnet CLI in this single instance of <see cref="IO_Exception_Check"/> class.
+        /// </summary>
+        public bool LocalUseDotnetCLI = UseDotnetCLI;
+
+        /// <summary>
+        /// If true only returns test results when a exception has been produced.
+        /// </summary>
+        public bool ReturnOnlyExceptions = true;
 
         public string appPath;
         public string arguments;
         public string testInputPath;
-
+        
         public int timeout = 30000;
 
         /// <summary>
@@ -66,11 +78,11 @@ namespace Console_IO_Tester
         /// Inputing all strings from testInputPath into standard input of target application.
         /// </summary>
         /// <returns>true if there are no exception. On exception, current testInput, exception and standard output are returned.</returns>
-        public object RunCheck()
+        public List<IO_Exception_Check_Result> RunCheck()
         {
             List<string> array = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(testInputPath));
 
-            StringBuilder result = new StringBuilder("true");
+            List<IO_Exception_Check_Result> results = new List<IO_Exception_Check_Result>();
 
             StringBuilder stdoutxTemp = new StringBuilder();
             StringBuilder stderrxTemp = new StringBuilder();
@@ -107,16 +119,18 @@ namespace Console_IO_Tester
 
                 if (!string.IsNullOrEmpty(stderrx.ToString()))
                 {
-                    result.Append("Input: ").Append(item).Append(" Error: ").Append(stderrx).Append("\nOutput: \n").Append(stdoutx).AppendLine();
+                    results.Add(new IO_Exception_Check_Result(item, stdoutx.ToString(), stderrx.ToString()));
                 }
                 else
                 {
-
-                    result.Append("Input: ").Append(item).Append("\nOutput: \n").Append(stdoutx);
+                    if (!ReturnOnlyExceptions)
+                    {
+                        results.Add(new IO_Exception_Check_Result(item, stdoutx.ToString()));
+                    }
                 }
             });
 
-            return result.ToString();
+            return results;
         }
 
         /// <summary>
