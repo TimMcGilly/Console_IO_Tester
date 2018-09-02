@@ -50,7 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Console_IO_Tester\Console_IO_Tester.csproj">
-      <Project>{9e69116f-88fe-4e57-956a-f3a686cb3f79}</Project>
+      <Project>{6e92ae8c-4476-4399-a9f5-a71e8d79a0a6}</Project>
       <Name>Console_IO_Tester</Name>
     </ProjectReference>
   </ItemGroup>
