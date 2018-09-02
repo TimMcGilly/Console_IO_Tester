@@ -28,17 +28,6 @@ namespace Console_IO_Tester
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IO_Exception_Check"/> class. Uses Big List of Naughty Strings are input string for test.
-        /// </summary>
-        /// <param name="appPath">Path to file containing test input strings.</param>
-
-        public IO_Exception_Check(string appPath)
-        {
-            this.appPath = appPath;
-            this.testInputPath = @"C:\Users\timmc_000\Source\Repos\Challenges_C_Sharp\blns.json";
-        }
-
-        /// <summary>
         /// Inputing all strings from testInputPath into standard input of target application.
         /// </summary>
         /// <returns>true if there are no exception. On exception, current testInput, exception and standard output are returned.</returns>
