@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Xunit;
 
 namespace Console_IO_Tester.Test
@@ -13,11 +11,39 @@ namespace Console_IO_Tester.Test
         }
 
         [Fact]
-        public void Simple_10_input_validation()
+        public void Ten_inputs_all__null_reference_exceptions()
         {
-            Console_IO_Tester.IO_Exception_Check Console_Exception_Check = new Console_IO_Tester.IO_Exception_Check(@"../../../../Null_Reference_Exception_Every_Run", @"../../../10_inputs.json");
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../Null_Reference_Exception_Every_Run", "../../../10_inputs.json");
+
             var results = Console_Exception_Check.RunCheck();
-            Assert.InRange(results.Count(), 4, 10);
+            Assert.Equal(10, results.Count);
+        }
+
+        [Fact]
+        public void BLNS_all_exceptions()
+        {
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../Null_Reference_Exception_Every_Run", "../../../blns.json");
+
+            var results = Console_Exception_Check.RunCheck();
+            Assert.Equal(503, results.Count);
+        }
+
+        [Fact]
+        public void Ten_inputs_no_exceptions()
+        {
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../No_Exceptions", "../../../10_inputs.json");
+
+            var results = Console_Exception_Check.RunCheck();
+            Assert.Empty(results);
+        }
+
+        [Fact]
+        public void BLNS_no_exceptions()
+        {
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../No_Exceptions", "../../../blns.json");
+
+            var results = Console_Exception_Check.RunCheck();
+            Assert.Empty(results);
         }
     }
 }
