@@ -24,13 +24,29 @@ namespace Console_IO_Tester
         /// If true only returns test results when a exception has been produced.
         /// </summary>
         public bool ReturnOnlyExceptions = true;
+    
 
+        /// <summary>
+        /// Path to target application.
+        /// </summary>
         public string appPath;
+
+        /// <summary>
+        /// Arugments passed to target application on launch.
+        /// </summary>
         public string arguments;
+
+        /// <summary>
+        /// Path to file containing test input strings.
+        /// </summary>
         public string testInputPath;
 
+        /// <summary>
+        /// Timeout in millisecond till the target application is killed.
+        /// </summary>
         public int timeout = 60000;
 
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="IO_Exception_Check"/> class.
         /// </summary>
@@ -76,47 +92,64 @@ namespace Console_IO_Tester
         /// <returns>true if there are no exception. On exception, current testInput, exception and standard output are returned.</returns>
         public ConcurrentBag<IO_Exception_Check_Result> RunCheck()
         {
-            List<string> array = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(testInputPath));
+            List<string> testInputArray = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(testInputPath));
 
             ConcurrentBag<IO_Exception_Check_Result> results = new ConcurrentBag<IO_Exception_Check_Result>();
 
-            StringBuilder[] stdoutx = new StringBuilder[array.Count];
-            StringBuilder[] stderrx = new StringBuilder[array.Count];
+            StringBuilder[] stdoutx = new StringBuilder[testInputArray.Count];
+            StringBuilder[] stderrx = new StringBuilder[testInputArray.Count];
 
-            Process[] processes = new Process[array.Count];
+            
+            Process[] processes = new Process[testInputArray.Count];
 
             if (LocalUseDotnetCLI)
             {
+                //Build the .net application once and then sets the --no-build so it isn't rebuilt
                 Dotnet_CLI_build();
                 arguments += "--no-build";
             }
 
-            for (int i = 0; i < array.Count; i++)
+            //Launches process for each item in the 
+            for (int i = 0; i < testInputArray.Count; i++)
             {
-                processes[i] = LauchProcessHandler(ref stdoutx[i], ref stderrx[i]);
-
-                for (int x = 0; x < 20; x++)
+                try
                 {
-                    processes[i].StandardInput.WriteLine(array[i]);
+                    processes[i] = LauchProcessHandler(ref stdoutx[i], ref stderrx[i]);
+
+                    for (int x = 0; x < 20; x++)
+                    {
+                        processes[i].StandardInput.WriteLine(testInputArray[i]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
                 }
             }
 
             for (int i = 0; i < processes.Length; i++)
             {
+                try
+                {
                     if (!processes[i].WaitForExit(timeout))
                     {
                         processes[i].Kill();
                     }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
 
                 if (!string.IsNullOrEmpty(stderrx[i].ToString()))
                 {
-                    results.Add(new IO_Exception_Check_Result(array[i], stdoutx[i].ToString(), stderrx[i].ToString()));
+                    results.Add(new IO_Exception_Check_Result(testInputArray[i], stdoutx[i].ToString(), stderrx[i].ToString()));
                 }
                 else
                 {
                     if (!ReturnOnlyExceptions)
                     {
-                        results.Add(new IO_Exception_Check_Result(array[i], stdoutx[i].ToString()));
+                        results.Add(new IO_Exception_Check_Result(testInputArray[i], stdoutx[i].ToString()));
                     }
                 }
             }
