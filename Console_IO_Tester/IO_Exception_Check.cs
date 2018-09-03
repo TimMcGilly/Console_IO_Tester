@@ -109,9 +109,10 @@ namespace Console_IO_Tester
                 arguments += "--no-build";
             }
 
-            //Launches process for each item in the 
+            //Launches process for each item in the testInputArray
             for (int i = 0; i < testInputArray.Count; i++)
             {
+                //Catches exceptions when launching proccess and sending them input
                 try
                 {
                     processes[i] = LauchProcessHandler(ref stdoutx[i], ref stderrx[i]);
@@ -123,10 +124,12 @@ namespace Console_IO_Tester
                 }
                 catch (Exception e)
                 {
+                    //TODO: Add proper logging functionatly. 
                     Debug.WriteLine(e);
                 }
             }
 
+            //Cleans up processes and adds any exceptions to results
             for (int i = 0; i < processes.Length; i++)
             {
                 try
@@ -138,8 +141,10 @@ namespace Console_IO_Tester
                 }
                 catch (Exception e)
                 {
+                    //TODO: Add proper logging functionatly. 
                     Debug.WriteLine(e);
                 }
+
 
                 if (!string.IsNullOrEmpty(stderrx[i].ToString()))
                 {
