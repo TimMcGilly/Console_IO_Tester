@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Null_Reference_Exception_Ev
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console_IO_Tester.Test", "Console_IO_Tester.Test\Console_IO_Tester.Test.csproj", "{3BD4246E-8C5F-4702-A41D-DD792B316B71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "No_Exceptions", "No_Exceptions\No_Exceptions.csproj", "{C6E2F637-BF57-4631-8D98-3343D2884B88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "No_Exceptions", "No_Exceptions\No_Exceptions.csproj", "{C6E2F637-BF57-4631-8D98-3343D2884B88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StartingArgumentsException", "StartingArgumentsException\StartingArgumentsException.csproj", "{A9B3E7A2-01AC-46A8-AB6A-99CB7E6ECCC0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{C6E2F637-BF57-4631-8D98-3343D2884B88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6E2F637-BF57-4631-8D98-3343D2884B88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6E2F637-BF57-4631-8D98-3343D2884B88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9B3E7A2-01AC-46A8-AB6A-99CB7E6ECCC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9B3E7A2-01AC-46A8-AB6A-99CB7E6ECCC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9B3E7A2-01AC-46A8-AB6A-99CB7E6ECCC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9B3E7A2-01AC-46A8-AB6A-99CB7E6ECCC0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +54,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B3D574DA-A9DF-4D16-9D06-1299DD6B6DA7} = {73EAB7A6-EA2B-40D2-BD01-77060AA9CD51}
 		{C6E2F637-BF57-4631-8D98-3343D2884B88} = {73EAB7A6-EA2B-40D2-BD01-77060AA9CD51}
+		{A9B3E7A2-01AC-46A8-AB6A-99CB7E6ECCC0} = {73EAB7A6-EA2B-40D2-BD01-77060AA9CD51}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {67D9CAF4-71A3-4C50-87BE-4F2504C9B130}

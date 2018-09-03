@@ -1,9 +1,19 @@
+using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Console_IO_Tester.Test
 {
     public class Console_IO_Tester_Tests
     {
+
+        private readonly ITestOutputHelper output;
+
+        public Console_IO_Tester_Tests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         [Fact]
         public void Test1()
         {
@@ -43,6 +53,35 @@ namespace Console_IO_Tester.Test
             IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../No_Exceptions", "../../../blns.json");
 
             var results = Console_Exception_Check.RunCheck();
+            Assert.Empty(results);
+        }
+
+        [Fact]
+        public void Starting_Inputs_Exception_Test()
+        {
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../StartingArugmentsException", "../../../10_inputs.json");
+
+            string[] inputs = { "a", "b" };
+            var results = Console_Exception_Check.RunCheck(inputs);
+            Assert.Equal(10, results.Count);
+        }
+
+        [Fact]
+        public void Starting_Inputs_No_Exception_Test()
+        {
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../StartingArgumentsException", "../../../10_inputs.json");
+
+            string[] inputs = { "b", "c" };
+            var results = Console_Exception_Check.RunCheck(inputs);
+            foreach (var result in results)
+            {
+                output.WriteLine("Test value: " + result.testInput);
+                output.WriteLine("Output: " + result.output);
+                if (result.exception != null)
+                {
+                    output.WriteLine("Exception: " + result.exception);
+                }
+            }
             Assert.Empty(results);
         }
     }
