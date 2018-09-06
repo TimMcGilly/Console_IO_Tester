@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Console_IO_Tester;
+using System;
 
 namespace Console_IO_Tester_CLI
 {
@@ -6,8 +7,12 @@ namespace Console_IO_Tester_CLI
     {
         static void Main(string[] args)
         {
-            Console_IO_Tester.IO_Exception_Check Console_Exception_Check = new Console_IO_Tester.IO_Exception_Check(@"../../../../Null_Reference_Exception_Every_Run", @"../../../10_inputs.json");
-            var results = Console_Exception_Check.RunCheck();
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../StartingArgumentsException", "../../../10_inputs.json");
+
+            
+
+            string[] inputs = { "b", "c" };
+            var results = Console_Exception_Check.Start(inputs);
             foreach (var result in results)
             {
                 Console.WriteLine("Test value: " + result.testInput);
@@ -17,8 +22,6 @@ namespace Console_IO_Tester_CLI
                     Console.WriteLine("Exception: " + result.exception);
                 }
             }
-            Console.WriteLine("Finished");
-            Console.ReadLine();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Console_IO_Tester.Test
         {
             IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../Null_Reference_Exception_Every_Run", "../../../10_inputs.json");
 
-            var results = Console_Exception_Check.RunCheck();
+            var results = Console_Exception_Check.Start();
             Assert.Equal(10, results.Count);
         }
 
@@ -34,7 +34,7 @@ namespace Console_IO_Tester.Test
         {
             IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../Null_Reference_Exception_Every_Run", "../../../blns.json");
 
-            var results = Console_Exception_Check.RunCheck();
+            var results = Console_Exception_Check.Start();
             Assert.Equal(503, results.Count);
         }
 
@@ -43,7 +43,7 @@ namespace Console_IO_Tester.Test
         {
             IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../No_Exceptions", "../../../10_inputs.json");
 
-            var results = Console_Exception_Check.RunCheck();
+            var results = Console_Exception_Check.Start();
             Assert.Empty(results);
         }
 
@@ -52,17 +52,18 @@ namespace Console_IO_Tester.Test
         {
             IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../No_Exceptions", "../../../blns.json");
 
-            var results = Console_Exception_Check.RunCheck();
+            var results = Console_Exception_Check.Start();
             Assert.Empty(results);
         }
 
         [Fact]
         public void Starting_Inputs_Exception_Test()
         {
-            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../StartingArugmentsException", "../../../10_inputs.json");
+            IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../StartingArgumentsException", "../../../10_inputs.json");
 
             string[] inputs = { "a", "b" };
-            var results = Console_Exception_Check.RunCheck(inputs);
+            var results = Console_Exception_Check.Start(inputs);
+            
             Assert.Equal(10, results.Count);
         }
 
@@ -72,7 +73,7 @@ namespace Console_IO_Tester.Test
             IO_Exception_Check Console_Exception_Check = new IO_Exception_Check("../../../../StartingArgumentsException", "../../../10_inputs.json");
 
             string[] inputs = { "b", "c" };
-            var results = Console_Exception_Check.RunCheck(inputs);
+            var results = Console_Exception_Check.Start(inputs);
             foreach (var result in results)
             {
                 output.WriteLine("Test value: " + result.testInput);

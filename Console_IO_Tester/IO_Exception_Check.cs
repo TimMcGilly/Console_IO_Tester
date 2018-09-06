@@ -88,9 +88,9 @@ namespace Console_IO_Tester
         /// Inputing all strings from testInputPath into standard input of target application.
         /// </summary>
         /// <returns>true if there are no exception. On exception, current testInput, exception and standard output are returned.</returns>
-        public ConcurrentBag<IO_Exception_Check_Result> RunCheck()
+        public ConcurrentBag<IO_Exception_Check_Result> Start()
         {
-            return RunCheck(Array.Empty<string>());
+            return Start(Array.Empty<string>());
         }
 
         /// <summary>
@@ -98,16 +98,18 @@ namespace Console_IO_Tester
         /// </summary>
         /// <param name="startingInputs">Input to be sent to the target application before test input are entered.</param>
         /// <returns>true if there are no exception. On exception, current testInput, exception and standard output are returned.</returns>
-        public ConcurrentBag<IO_Exception_Check_Result> RunCheck(string[] startingInputs)
+        public ConcurrentBag<IO_Exception_Check_Result> Start(string[] startingInputs)
         {
             List<string> testInputArray = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(testInputPath));
 
-            ConcurrentBag<IO_Exception_Check_Result> results = new ConcurrentBag<IO_Exception_Check_Result>();
+            var results = new ConcurrentBag<IO_Exception_Check_Result>();
 
             StringBuilder[] stdoutx = new StringBuilder[testInputArray.Count];
             StringBuilder[] stderrx = new StringBuilder[testInputArray.Count];
 
             Process[] processes = new Process[testInputArray.Count];
+
+
 
             if (LocalUseDotnetCLI)
             {
@@ -120,8 +122,7 @@ namespace Console_IO_Tester
             for (int i = 0; i < testInputArray.Count; i++)
             {
                 //Catches exceptions when launching proccess and sending them input
-                try
-                {
+                
                     processes[i] = LauchProcessHandler(ref stdoutx[i], ref stderrx[i]);
 
                     foreach (var input in startingInputs)
@@ -133,13 +134,9 @@ namespace Console_IO_Tester
                     {
                         processes[i].StandardInput.WriteLine(testInputArray[i]);
                     }
-                }
-                catch (Exception e)
-                {
-                    //TODO: Add proper logging functionatly. 
-                    Debug.WriteLine(e);
-                }
             }
+            Console.WriteLine("launched");
+
 
             //Cleans up processes and adds any exceptions to results
             for (int i = 0; i < processes.Length; i++)
@@ -190,7 +187,6 @@ namespace Console_IO_Tester
             {
                 startInfo.FileName = "dotnet";
                 startInfo.Arguments = $"run --project {appPath} {arguments}";
-                //startInfo.WorkingDirectory = startInfo.Arguments;
             }
             else
             {
@@ -217,12 +213,15 @@ namespace Console_IO_Tester
 
         private void Dotnet_CLI_build()
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardInput = true, FileName = "dotnet", Arguments = $"build {appPath}" };
-            Process process = new Process();
-            process.StartInfo = startInfo;
-            process.Start();
+            var startInfo = new ProcessStartInfo { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardInput = true, FileName = "dotnet", Arguments = $"build {appPath}" };
+            using (Process process = new Process())
+            {
+                process.StartInfo = startInfo;
+                process.Start();
 
-            process.WaitForExit();
+                process.WaitForExit();
+            }
+
         }
     }
 }
