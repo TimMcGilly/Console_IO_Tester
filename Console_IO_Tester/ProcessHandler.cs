@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace Console_IO_Tester
 {
-    class ProcessHandler
+    internal class ProcessHandler
     {
-        public Process process;
-        public StringBuilder stderrx;
-        public StringBuilder stdoutx;
+        public Process Process;
+        public StringBuilder Stderrx;
+        public StringBuilder Stdoutx;
 
         public ProcessHandler()
         {
-            this.process = new Process();
-            this.stderrx = new StringBuilder();
-            this.stdoutx = new StringBuilder();
+            this.Process = new Process();
+            this.Stderrx = new StringBuilder();
+            this.Stdoutx = new StringBuilder();
         }
 
     }

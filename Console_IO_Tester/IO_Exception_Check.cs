@@ -1,13 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Console_IO_Tester
+﻿namespace Console_IO_Tester
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using Newtonsoft.Json;
+
     public class IO_Exception_Check
     {
         /// <summary>
@@ -75,13 +73,13 @@ namespace Console_IO_Tester
         /// <param name="appPath">Path to target application.</param>
         /// <param name="testInputPath">Path to file containing test input strings.</param>
         /// <param name="timeout">Timeout in millisecond till the target application is killed.</param>
-        /// <param name="LocalUseDotnetCLI">Toggle using the dotnet CLI in this single instance of <see cref="IO_Exception_Check"/> class.</param>
-        public IO_Exception_Check(string appPath, string testInputPath, int timeout, bool LocalUseDotnetCLI)
+        /// <param name="localUseDotnetCLI">Toggle using the dotnet CLI in this single instance of <see cref="IO_Exception_Check"/> class.</param>
+        public IO_Exception_Check(string appPath, string testInputPath, int timeout, bool localUseDotnetCLI)
         {
             this.appPath = appPath;
             this.testInputPath = testInputPath;
             this.timeout = timeout;
-            this.LocalUseDotnetCLI = LocalUseDotnetCLI;
+            this.LocalUseDotnetCLI = localUseDotnetCLI;
         }
 
         /// <summary>
@@ -106,62 +104,66 @@ namespace Console_IO_Tester
 
             var results = new ConcurrentBag<IO_Exception_Check_Result>();
 
-            //Process[] processes = new Process[testInputArray.Count];
-
             var processes = new ProcessHandler[testInputArrayLength];
 
             if (LocalUseDotnetCLI)
             {
-                //Build the .net application once and then sets the --no-build so it isn't rebuilt
+                // Build the .net application once and then sets the --no-build so it isn't rebuilt
                 Dotnet_CLI_build();
                 arguments += "--no-build";
             }
 
-            //Launches process for each item in the testInputArray
+            // Launches process for each item in the testInputArray
             for (int i = 0; i < testInputArrayLength; i++)
             {
-                //Catches exceptions when launching proccess and sending them input
-                
-                    processes[i] = LauchProcessHandler();
+                processes[i] = LauchProcessHandler();
 
+                try
+                {
                     foreach (var input in startingInputs)
                     {
-                        processes[i].process.StandardInput.WriteLine(input);
+                        processes[i].Process.StandardInput.WriteLine(input);
                     }
 
                     for (int x = 0; x < 20; x++)
                     {
-                        processes[i].process.StandardInput.WriteLine(testInputArray[i]);
-                    }
-            }
-            Console.WriteLine("launched");
-
-
-            //Cleans up processes and adds any exceptions to results
-            for (int i = 0; i < processes.Length; i++)
-            {
-                try
-                {
-                    if (!processes[i].process.WaitForExit(timeout))
-                    {
-                        processes[i].process.Kill();
+                        processes[i].Process.StandardInput.WriteLine(testInputArray[i]);
                     }
                 }
                 catch (Exception e)
                 {
-                    //TODO: Add proper logging functionatly. 
+                    // TODO: Add proper logging functionatly.
+                    Debug.WriteLine(e);
+                }
+            }
+
+            Console.WriteLine("launched");
+
+            // Cleans up processes and adds any exceptions to results
+            for (int i = 0; i < processes.Length; i++)
+            {
+                try
+                {
+                    if (!processes[i].Process.WaitForExit(timeout))
+                    {
+                        processes[i].Process.Kill();
+                    }
+                }
+                catch (Exception e)
+                {
+                    // TODO: Add proper logging functionatly.
                     Debug.WriteLine(e);
                 }
 
-                if (!string.IsNullOrEmpty(processes[i].stderrx.ToString()))
+                if (!string.IsNullOrEmpty(processes[i].Stderrx.ToString()))
                 {
-                    results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].stdoutx.ToString(), processes[i].stderrx.ToString()));
+                    results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].Stdoutx.ToString(), processes[i].Stderrx.ToString()));
                 }
                 else
                 {
                     if (!ReturnOnlyExceptions)
                     {
-                        results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].stdoutx.ToString()));
+                        results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].Stdoutx.ToString()));
                     }
                 }
             }
@@ -192,18 +194,15 @@ namespace Console_IO_Tester
                 startInfo.Arguments = arguments;
             }
 
+            processHandler.Process.StartInfo = startInfo;
 
-            processHandler.process.StartInfo = startInfo;
+            processHandler.Process.OutputDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => processHandler.Stdoutx.Append(e.Data);
+            processHandler.Process.ErrorDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => processHandler.Stderrx.Append(e.Data);
 
-            processHandler.process.OutputDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => processHandler.stdoutx.Append(e.Data);
-            processHandler.process.ErrorDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => processHandler.stderrx.Append(e.Data);
+            processHandler.Process.Start();
 
-
-
-            processHandler.process.Start();
-
-            processHandler.process.BeginOutputReadLine();
-            processHandler.process.BeginErrorReadLine();
+            processHandler.Process.BeginOutputReadLine();
+            processHandler.Process.BeginErrorReadLine();
 
             return processHandler;
         }
@@ -218,7 +217,6 @@ namespace Console_IO_Tester
 
                 process.WaitForExit();
             }
-
         }
     }
 }
