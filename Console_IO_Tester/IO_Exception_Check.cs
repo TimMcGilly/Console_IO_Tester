@@ -102,14 +102,13 @@ namespace Console_IO_Tester
         {
             List<string> testInputArray = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(testInputPath));
 
+            int testInputArrayLength = testInputArray.Count;
+
             var results = new ConcurrentBag<IO_Exception_Check_Result>();
 
-            StringBuilder[] stdoutx = new StringBuilder[testInputArray.Count];
-            StringBuilder[] stderrx = new StringBuilder[testInputArray.Count];
+            //Process[] processes = new Process[testInputArray.Count];
 
-            Process[] processes = new Process[testInputArray.Count];
-
-
+            var processes = new ProcessHandler[testInputArrayLength];
 
             if (LocalUseDotnetCLI)
             {
@@ -119,20 +118,20 @@ namespace Console_IO_Tester
             }
 
             //Launches process for each item in the testInputArray
-            for (int i = 0; i < testInputArray.Count; i++)
+            for (int i = 0; i < testInputArrayLength; i++)
             {
                 //Catches exceptions when launching proccess and sending them input
                 
-                    processes[i] = LauchProcessHandler(ref stdoutx[i], ref stderrx[i]);
+                    processes[i] = LauchProcessHandler();
 
                     foreach (var input in startingInputs)
                     {
-                        processes[i].StandardInput.WriteLine(input);
+                        processes[i].process.StandardInput.WriteLine(input);
                     }
 
                     for (int x = 0; x < 20; x++)
                     {
-                        processes[i].StandardInput.WriteLine(testInputArray[i]);
+                        processes[i].process.StandardInput.WriteLine(testInputArray[i]);
                     }
             }
             Console.WriteLine("launched");
@@ -143,9 +142,9 @@ namespace Console_IO_Tester
             {
                 try
                 {
-                    if (!processes[i].WaitForExit(timeout))
+                    if (!processes[i].process.WaitForExit(timeout))
                     {
-                        processes[i].Kill();
+                        processes[i].process.Kill();
                     }
                 }
                 catch (Exception e)
@@ -154,15 +153,15 @@ namespace Console_IO_Tester
                     Debug.WriteLine(e);
                 }
 
-                if (!string.IsNullOrEmpty(stderrx[i].ToString()))
+                if (!string.IsNullOrEmpty(processes[i].stderrx.ToString()))
                 {
-                    results.Add(new IO_Exception_Check_Result(testInputArray[i], stdoutx[i].ToString(), stderrx[i].ToString()));
+                    results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].stdoutx.ToString(), processes[i].stderrx.ToString()));
                 }
                 else
                 {
                     if (!ReturnOnlyExceptions)
                     {
-                        results.Add(new IO_Exception_Check_Result(testInputArray[i], stdoutx[i].ToString()));
+                        results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].stdoutx.ToString()));
                     }
                 }
             }
@@ -170,10 +169,9 @@ namespace Console_IO_Tester
             return results;
         }
 
-        private Process LauchProcessHandler(ref StringBuilder stdoutxParam, ref StringBuilder stderrxParam)
+        private ProcessHandler LauchProcessHandler()
         {
-            StringBuilder stdoutx = new StringBuilder();
-            StringBuilder stderrx = new StringBuilder();
+            var processHandler = new ProcessHandler();
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -194,21 +192,20 @@ namespace Console_IO_Tester
                 startInfo.Arguments = arguments;
             }
 
-            Process process = new Process();
-            process.StartInfo = startInfo;
 
-            process.OutputDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => stdoutx.Append(e.Data);
-            process.ErrorDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => stderrx.Append(e.Data);
+            processHandler.process.StartInfo = startInfo;
 
-            stdoutxParam = stdoutx;
-            stderrxParam = stderrx;
+            processHandler.process.OutputDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => processHandler.stdoutx.Append(e.Data);
+            processHandler.process.ErrorDataReceived += (object sender, System.Diagnostics.DataReceivedEventArgs e) => processHandler.stderrx.Append(e.Data);
 
-            process.Start();
 
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
 
-            return process;
+            processHandler.process.Start();
+
+            processHandler.process.BeginOutputReadLine();
+            processHandler.process.BeginErrorReadLine();
+
+            return processHandler;
         }
 
         private void Dotnet_CLI_build()
