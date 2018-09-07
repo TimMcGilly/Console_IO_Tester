@@ -6,7 +6,7 @@
     using System.Diagnostics;
     using Newtonsoft.Json;
 
-    public class IO_Exception_Check
+    public partial class IO_Exception_Check
     {
         /// <summary>
         /// Toggle default value for using the dotnet CLI for testing in the <see cref="IO_Exception_Check"/> class..
@@ -42,6 +42,12 @@
         /// Timeout in millisecond till the target application is killed.
         /// </summary>
         public int timeout = 60000;
+
+        private bool startRunning;
+
+        public event StartExitedHandler StartExited;
+
+        public delegate void StartExitedHandler(object m, EventArgs e);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IO_Exception_Check"/> class.
@@ -98,77 +104,88 @@
         /// <returns>true if there are no exception. On exception, current testInput, exception and standard output are returned.</returns>
         public ConcurrentBag<IO_Exception_Check_Result> Start(string[] startingInputs)
         {
-            List<string> testInputArray = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(testInputPath));
-
-            int testInputArrayLength = testInputArray.Count;
-
-            var results = new ConcurrentBag<IO_Exception_Check_Result>();
-
-            var processes = new ProcessHandler[testInputArrayLength];
-
-            if (LocalUseDotnetCLI)
+            if (startRunning)
             {
-                // Build the .net application once and then sets the --no-build so it isn't rebuilt
-                Dotnet_CLI_build();
-                arguments += "--no-build";
+                throw new StartAlreadyRunning("Start() is already running. Please use the StartExited event.");
             }
-
-            // Launches process for each item in the testInputArray
-            for (int i = 0; i < testInputArrayLength; i++)
+            else
             {
-                processes[i] = LauchProcessHandler();
+                startRunning = true;
+                List<string> testInputArray = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(testInputPath));
 
-                try
+                int testInputArrayLength = testInputArray.Count;
+
+                var results = new ConcurrentBag<IO_Exception_Check_Result>();
+
+                var processes = new ProcessHandler[testInputArrayLength];
+
+                if (LocalUseDotnetCLI)
                 {
-                    foreach (var input in startingInputs)
-                    {
-                        processes[i].Process.StandardInput.WriteLine(input);
-                    }
+                    // Build the .net application once and then sets the --no-build so it isn't rebuilt
+                    Dotnet_CLI_build();
+                    arguments += "--no-build";
+                }
 
-                    for (int x = 0; x < 20; x++)
+                // Launches process for each item in the testInputArray
+                for (int i = 0; i < testInputArrayLength; i++)
+                {
+                    processes[i] = LauchProcessHandler();
+
+                    try
                     {
-                        processes[i].Process.StandardInput.WriteLine(testInputArray[i]);
+                        foreach (var input in startingInputs)
+                        {
+                            processes[i].Process.StandardInput.WriteLine(input);
+                        }
+
+                        for (int x = 0; x < 20; x++)
+                        {
+                            processes[i].Process.StandardInput.WriteLine(testInputArray[i]);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // TODO: Add proper logging functionatly.
+                        Debug.WriteLine(e);
                     }
                 }
-                catch (Exception e)
+
+                Console.WriteLine("launched");
+
+                // Cleans up processes and adds any exceptions to results
+                for (int i = 0; i < processes.Length; i++)
                 {
-                    // TODO: Add proper logging functionatly.
-                    Debug.WriteLine(e);
+                    try
+                    {
+                        if (!processes[i].Process.WaitForExit(timeout))
+                        {
+                            processes[i].Process.Kill();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // TODO: Add proper logging functionatly.
+                        Debug.WriteLine(e);
+                    }
+
+                    if (!string.IsNullOrEmpty(processes[i].Stderrx.ToString()))
+                    {
+                        results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].Stdoutx.ToString(), processes[i].Stderrx.ToString()));
+                    }
+                    else
+                    {
+                        if (!ReturnOnlyExceptions)
+                        {
+                            results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].Stdoutx.ToString()));
+                        }
+                    }
                 }
+
+                startRunning = false;
+                StartExited?.Invoke(this, System.EventArgs.Empty);
+
+                return results;
             }
-
-            Console.WriteLine("launched");
-
-            // Cleans up processes and adds any exceptions to results
-            for (int i = 0; i < processes.Length; i++)
-            {
-                try
-                {
-                    if (!processes[i].Process.WaitForExit(timeout))
-                    {
-                        processes[i].Process.Kill();
-                    }
-                }
-                catch (Exception e)
-                {
-                    // TODO: Add proper logging functionatly.
-                    Debug.WriteLine(e);
-                }
-
-                if (!string.IsNullOrEmpty(processes[i].Stderrx.ToString()))
-                {
-                    results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].Stdoutx.ToString(), processes[i].Stderrx.ToString()));
-                }
-                else
-                {
-                    if (!ReturnOnlyExceptions)
-                    {
-                        results.Add(new IO_Exception_Check_Result(testInputArray[i], processes[i].Stdoutx.ToString()));
-                    }
-                }
-            }
-
-            return results;
         }
 
         private ProcessHandler LauchProcessHandler()
@@ -209,7 +226,11 @@
 
         private void Dotnet_CLI_build()
         {
-            var startInfo = new ProcessStartInfo { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardInput = true, FileName = "dotnet", Arguments = $"build {appPath}" };
+            var startInfo = new ProcessStartInfo {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                FileName = "dotnet", Arguments = $"build {appPath}" };
             using (Process process = new Process())
             {
                 process.StartInfo = startInfo;

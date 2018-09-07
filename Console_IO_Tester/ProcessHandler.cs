@@ -15,6 +15,5 @@ namespace Console_IO_Tester
             this.Stderrx = new StringBuilder();
             this.Stdoutx = new StringBuilder();
         }
-
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -84,6 +85,33 @@ namespace Console_IO_Tester.Test
                 }
             }
             Assert.Empty(results);
+        }
+
+        [Fact]
+        public void Start_Running_Event_Test()
+        {
+            var console_Exception_Check = new IO_Exception_Check("../../../../No_Exceptions", "../../../10_inputs.json");
+             console_Exception_Check.Start();
+
+            console_Exception_Check.StartExited += (object sender, EventArgs e) =>
+            {
+                Assert.Empty(console_Exception_Check.Start()); 
+            };
+        }
+
+        [Fact]
+        public void Start_Running_Exception_Test()
+        {
+            var console_Exception_Check = new IO_Exception_Check("../../../../No_Exceptions", "../../../10_inputs.json");
+
+            ThreadStart threadStart = new ThreadStart(() => console_Exception_Check.Start());
+            Thread thread = new Thread(threadStart);
+            thread.Start();
+            Exception ex = Assert.Throws<IO_Exception_Check.StartAlreadyRunning>(() => console_Exception_Check.Start());
+
+            Assert.Equal("Start() is already running. Please use the StartExited event.", ex.Message);
+
+            
         }
     }
 }
